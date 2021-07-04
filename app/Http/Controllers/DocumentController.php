@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\User;
+
 use PDF;
 
 class DocumentController extends Controller
 {
     public function index()
     {
-
         // set document information
         PDF::SetAuthor('Universidad de Oriente');
         PDF::SetTitle('Coordinación General de Control de Estudios');
@@ -38,6 +39,12 @@ class DocumentController extends Controller
         // set image scale factor
         PDF::setImageScale(PDF_IMAGE_SCALE_RATIO);
 
+        // set some language-dependent strings (optional)
+        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+            require_once(dirname(__FILE__).'/lang/eng.php');
+            PDF::setLanguageArray($l);
+        }
+
         // ---------------------------------------------------------
 
         /*
@@ -48,19 +55,32 @@ class DocumentController extends Controller
         */
 
         // set certificate file
-        $certificate = file_get_contents('certificados/milena_bravo_de_romero.cer');
-        $key = file_get_contents('certificados/milena_bravo_de_romero.key');
+        $certificate1 = file_get_contents('certificados/milena_bravo_de_romero.cer');
+        
+        $certificate2 = file_get_contents('certificados/jose_marcano.cer');
+
+        // set key private file
+        $key1 = file_get_contents('certificados/milena_bravo_de_romero.key');
+        
+        $key2 = file_get_contents('certificados/jose_marcano.key');
 
         // set additional information
-        $info = array(
+        $info1 = array(
             'Name' => 'Milena Bravo de Romero',
             'Location' => 'Rectoría',
             'Reason' => 'Universidad de Oriente',
             'ContactInfo' => 'rectora@udo.edu.ve',
             );
+        
+        $info2 = array('Name' => 'José Marcano',
+          'Location' => 'Secretaría',
+          'Reason' => 'Universidad de Oriente',
+          'ContactInfo' => 'secretario@udo.edu.ve');
 
         // set document signature
-        PDF::setSignature($certificate, $key, '', '', 2, $info);
+        PDF::setSignature($certificate1, $key1, '', '', 2, $info1);
+        
+        PDF::setSignature($certificate2, $key2, '', '', 2, $info2, 'A');
 
         // set font
         PDF::SetFont('helvetica', '', 12);
@@ -78,21 +98,28 @@ class DocumentController extends Controller
         // create content for signature (image and/or text)
         PDF::Image('img/firma1.png', 180, 60, 15, 15, 'PNG');
 
+        PDF::Image('img/firma2.png', 180, 80, 15, 15, 'PNG');
+
         // define active area for signature appearance
         PDF::setSignatureAppearance(180, 60, 15, 15);
+        // PDF::addEmptySignatureAppearance(180, 60, 15, 15);
 
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         // *** set an empty signature appearance ***
-        PDF::addEmptySignatureAppearance(180, 80, 15, 15);
+        // PDF::addEmptySignatureAppearance(180, 80, 15, 15);
+        PDF::setSignatureAppearance(180, 80, 15, 15);
 
         // ---------------------------------------------------------
 
+
+
         //Close and output PDF document
-        PDF::Output('TestSigned.pdf', 'D');
+        PDF::Output('E:/Trabajos/UDO/DigitalSignature/public/firmados/firmados.pdf', 'F');
 
         //============================================================+
         // END OF FILE
         //============================================================+
+        return redirect()->back();
     }
 }
