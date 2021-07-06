@@ -4,13 +4,57 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use setasign\Fpdi\Tcpdf\Fpdi;
+
 use App\Models\User;
 
 use PDF;
 
 class DocumentController extends Controller
 {
+
     public function index()
+    {
+        $pdf = new Fpdi();
+
+		// set document information
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetAuthor('Universidad de Oriente');
+		$pdf->SetTitle('Coordinación General de Control de Estudios');
+		$pdf->SetSubject('Certificación de documentos');
+		$pdf->SetKeywords('');
+		$pdf->setPrintHeader(false);
+		// set default header data
+		 $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE.' 037', PDF_HEADER_STRING);
+
+		 // set header and footer fonts
+		 $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+		 $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+		 // set default monospaced font
+		 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);	
+
+		$pdf->SetFont('helvetica', '', 11);
+		$pageCount = $pdf->setSourceFile('pdf/docs.pdf');
+		$templateId = $pdf->importPage(1);
+		
+		$size = $pdf->getTemplateSize($templateId);
+		if ($size[0] > $size[1]) {
+			$pdf->AddPage('L', array($size[0], $size[1]));					
+		} else {
+			$pdf->AddPage('P', array($size[0], $size[1]));
+		}
+		$pdf->useTemplate($templateId);
+
+        
+		$pdf->addEmptySignatureAppearance(10,13,40,18);
+        $pdf->addEmptySignatureAppearance(10,34,40,18);
+
+        $pdf->Output('E:/Trabajos/UDO/DigitalSignature/public/firmados/firmados.pdf','F');
+        return redirect()->back();
+    }
+
+    public function index2()
     {
         // set document information
         PDF::SetAuthor('Universidad de Oriente');
@@ -78,9 +122,9 @@ class DocumentController extends Controller
           'ContactInfo' => 'secretario@udo.edu.ve');
 
         // set document signature
-        PDF::setSignature($certificate1, $key1, '', '', 2, $info1);
+        PDF::setSignature($certificate1, $key1, '', '', 3, $info1);
         
-        PDF::setSignature($certificate2, $key2, '', '', 2, $info2, 'A');
+        PDF::setSignature($certificate2, $key2, '', '', 3, $info2, 'A');
 
         // set font
         PDF::SetFont('helvetica', '', 12);
@@ -101,14 +145,14 @@ class DocumentController extends Controller
         PDF::Image('img/firma2.png', 180, 80, 15, 15, 'PNG');
 
         // define active area for signature appearance
-        PDF::setSignatureAppearance(180, 60, 15, 15);
-        // PDF::addEmptySignatureAppearance(180, 60, 15, 15);
+        //PDF::setSignatureAppearance(180, 60, 15, 15);
+        PDF::addEmptySignatureAppearance(180, 60, 15, 15);
 
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         // *** set an empty signature appearance ***
-        // PDF::addEmptySignatureAppearance(180, 80, 15, 15);
-        PDF::setSignatureAppearance(180, 80, 15, 15);
+        PDF::addEmptySignatureAppearance(180, 80, 15, 15);
+        // PDF::setSignatureAppearance(180, 80, 15, 15);
 
         // ---------------------------------------------------------
 
