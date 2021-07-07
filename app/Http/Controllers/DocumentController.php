@@ -8,13 +8,27 @@ use setasign\Fpdi\Tcpdf\Fpdi;
 
 use App\Models\User;
 
+use date_default_timezone_set;
+
 use PDF;
 
 class DocumentController extends Controller
 {
 
-    public function index()
+
+	public function index()
     {
+
+        date_default_timezone_set('America/Caracas');
+
+        $signer = 'Milena Bravo';
+        
+        $reason = 'Certificación de documentos';
+
+        $location = 'Cumaná - Venezuela';
+
+        $date = date("Y-m-d H:i:s");    
+
         $pdf = new Fpdi();
 
 		// set document information
@@ -34,7 +48,7 @@ class DocumentController extends Controller
 		 // set default monospaced font
 		 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);	
 
-		$pdf->SetFont('helvetica', '', 11);
+		$pdf->SetFont('helvetica', '', 6);
 		$pageCount = $pdf->setSourceFile('pdf/docs.pdf');
 		$templateId = $pdf->importPage(1);
 		
@@ -46,8 +60,35 @@ class DocumentController extends Controller
 		}
 		$pdf->useTemplate($templateId);
 
+		// set certificate file
+        $certificate1 = file_get_contents('certificados/milena_bravo_de_romero.cer');
+
+		// set key private file
+        $key1 = file_get_contents('certificados/milena_bravo_de_romero.key');
+
+		// set additional information
+        $info1 = array(
+            'Name' => 'Milena Bravo de Romero',
+            'Location' => 'Rectoría',
+            'Reason' => 'Universidad de Oriente',
+            'ContactInfo' => 'rectora@udo.edu.ve',
+            );
+
+		// set document signature
+        $pdf->setSignature($certificate1, $key1, '', '', 3, $info1, 'A');
+
+		$text1 = 'Firmado digitalmente por '.$signer;
+		$text2 = 'Razón: '.$reason;
+		$text3 = 'Ubicación: '.$location;
+		$text4 = 'Fecha: '.$date;
+
+		$pdf->text(9, 16, $text1);
+		$pdf->text(9, 18, $text2);
+		$pdf->text(9, 20.5, $text3);
+		$pdf->text(9, 23, $text4);
+
         
-		$pdf->addEmptySignatureAppearance(10,13,40,18);
+		$pdf->setSignatureAppearance(10,13,40,18);
         $pdf->addEmptySignatureAppearance(10,34,40,18);
 
         $pdf->Output('E:/Trabajos/UDO/DigitalSignature/public/firmados/firmados.pdf','F');
@@ -166,4 +207,5 @@ class DocumentController extends Controller
         //============================================================+
         return redirect()->back();
     }
+    
 }

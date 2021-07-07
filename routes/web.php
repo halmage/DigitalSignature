@@ -19,3 +19,7 @@ Route::get('/', function () {
 });
 
 Route::get("/document",[Controller\DocumentController::class,'index'])->name('document');
+
+Route::get("/first",[Controller\DocumentController::class,'first'])->name('first');
+
+Route::get("/second",[Controller\DocumentController::class,'second'])->name('second');
